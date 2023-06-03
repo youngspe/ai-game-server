@@ -26,29 +26,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const express_1 = __importStar(require("express"));
-const jwtUtil_1 = require("../jwtUtil");
-const Container_1 = require("../Container");
-const wsUtils_1 = __importDefault(require("../wsUtils"));
-const TokenManager_1 = __importDefault(require("../TokenManager"));
-var Api;
-(function (Api) {
-    Api.Key = new Container_1.TypeKey();
+const Container_1 = require("./Container");
+const api_1 = __importDefault(require("./api"));
+const wsUtils_1 = __importDefault(require("./wsUtils"));
+const TokenManager_1 = __importDefault(require("./TokenManager"));
+const uuid = __importStar(require("uuid"));
+const HttpError_1 = __importDefault(require("./HttpError"));
+var App;
+(function (App) {
+    App.Key = new Container_1.TypeKey;
     function Module(ct) {
-        ct.provide(Api.Key, {
+        const errorHandler = (err, req, res, next) => {
+            res.status(err?.status ?? 500);
+            res.json({ error: err?.message ?? err ?? 'Unknown' });
+        };
+        ct.provide(App.Key, {
+            api: api_1.default.Key,
             wsu: wsUtils_1.default.Key,
             tokenManager: TokenManager_1.default.Key,
-        }, ({ wsu, tokenManager }) => (0, express_1.Router)()
-            .use(express_1.default.json(), tokenManager.verifyJwt)
-            .put('/games/:code/players', (req, res, next) => {
-            next(new Error('not implemented'));
+        }, ({ api, wsu, tokenManager }) => (0, express_1.default)()
+            .use('/api', (0, express_1.Router)()
+            .use(express_1.default.json())
+            .post('/session', async (req, res, next) => {
+            const token = await tokenManager.sign({ userId: uuid.v4() });
+            res.json({ token });
         })
-            .get('/games/:code/events', wsu.handle((ws, req) => {
-            throw new Error('not implemented');
+            .use(api))
+            .get('/ws', wsu.handle(async (ws) => {
+            await ws.sendAsync('Hello, world!');
+            ws.close();
         }))
-            .get('/foo', async (req, res) => {
-            res.json((0, jwtUtil_1.getToken)(req));
-        }));
+            .use((req, res, next) => { next(new HttpError_1.default(404)); })
+            .use(errorHandler));
     }
-    Api.Module = Module;
-})(Api || (Api = {}));
-module.exports = Api;
+    App.Module = Module;
+})(App || (App = {}));
+module.exports = App;
