@@ -4,11 +4,12 @@ const lazySymbol = Symbol()
 const provideSymbol = Symbol()
 
 class Lazy<T> {
-    private _init: null | (() => T)
+    private _init?: () => T
     private _value?: T
     get value() {
         if (this._init) {
             this._value = this._init()
+            this._init = undefined
         }
         return this._value!
     }
@@ -120,13 +121,15 @@ namespace Container {
         provider = new ProviderKey<T>(this)
     }
 
-    export class Factory<Args extends any[], T> extends TypeKey<(...args: Args) => T> { }
+    export class FactoryKey<Args extends any[], T> extends TypeKey<(...args: Args) => T> { }
 
     export type Dependencies<T> =
         | TypeKey<T>
         | AbstractKey<T>
         | { [K in keyof T]: Dependencies<T[K]> }
         | (T extends {} ? {} : never)
+
+    export type Actual<D> = D extends Dependencies<infer T> ? T : never
 }
 
 export = Container

@@ -6,14 +6,16 @@ import TokenManager from "./TokenManager"
 import * as uuid from 'uuid'
 import HttpError from "./HttpError"
 import { Express } from "express"
+import { errorInfo } from "./errorUtils"
 
 namespace App {
     export const Key = new TypeKey<Express>
 
     export function Module(ct: Container) {
         const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-            res.status(err?.status ?? 500)
-            res.json({ error: err?.message ?? err ?? 'Unknown' })
+            const { status, message } = errorInfo(err)
+            res.status(status)
+            res.json({ error: message })
         }
 
         ct.provide(Key, {

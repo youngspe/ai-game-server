@@ -5,6 +5,9 @@ import WsUtils from './wsUtils'
 import Container from './Container'
 import App from './App'
 import TokenManager from './TokenManager'
+import EventStreamConnection from './api/EventStreamConnection'
+import Game from './api/Game'
+import GameRegistry from './api/GameRegistry'
 
 
 const jwtSecret = fs.readFileSync('secrets/jwt')
@@ -18,6 +21,9 @@ new Container()
     .apply(WsUtils.Module)
     .apply(Api.Module)
     .apply(App.Module)
+    .apply(EventStreamConnection.Module)
+    .apply(Game.Module)
+    .apply(GameRegistry.Module)
     .request(App.Key)
     .listen(port, () => {
         console.log(`Listening on port ${port}`)

@@ -2,6 +2,7 @@ import { RequestHandler } from "express"
 import WebSocket, { WebSocketServer } from "ws"
 import Container, { TypeKey } from "./Container"
 import http from 'http'
+import { errorInfo } from "./errorUtils"
 
 class WsUtils {
     server: WebSocket.WebSocketServer
@@ -20,8 +21,7 @@ class WsUtils {
                         ws.send(data, e => e ? err(e) : ok())
                     })
                     f(ws as WsUtils.WebSocketAsync, req)?.catch(e => {
-                        const code = (typeof e?.status == 'number') ? e.status : 500
-                        ws.close(code, JSON.stringify({ error: e?.message ?? http.STATUS_CODES[code] ?? 'Unknown' }))
+                        this.fail(ws, e)
                     })
                 })
             } else {
@@ -30,6 +30,10 @@ class WsUtils {
         }
     }
 
+    fail(ws: WebSocket, error: any) {
+        const { status, message } = errorInfo(error)
+        ws.close(status, JSON.stringify({ error: message }))
+    }
 }
 
 namespace WsUtils {
