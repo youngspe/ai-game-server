@@ -127,7 +127,6 @@ namespace Container {
         | TypeKey<T>
         | AbstractKey<T>
         | { [K in keyof T]: Dependencies<T[K]> }
-        | (T extends {} ? {} : never)
 
     export type Actual<D> = D extends Dependencies<infer T> ? T : never
 }
