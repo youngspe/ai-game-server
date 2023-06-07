@@ -11,11 +11,14 @@ class EventStreamConnection {
         this.userId = userId
     }
 
-    async start(game: Game) {
+    start(game: Game) {
         this._ws.on('message', (data, bin) => {
-            // TODO: handle messages
+            // TODO: do I need to check if data is Buffer[] or ArrayBuffer and handle differently?
+            game.onMessage(this, data.toString())
         })
-        await this._ws.sendAsync(game.currentStateString())
+        this._ws.on('close', () => {
+            game.connectionClosed(this)
+        })
     }
 
     async sendEvent(event: string) {

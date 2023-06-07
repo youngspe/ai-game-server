@@ -132,4 +132,3 @@ namespace Container {
 }
 
 export = Container
-
