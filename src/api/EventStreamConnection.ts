@@ -2,7 +2,7 @@ import Container, { FactoryKey } from "../Container"
 import { WebSocketAsync } from "../wsUtils"
 import Game from "./Game"
 
-class EventStreamConnection {
+export class EventStreamConnection {
     private readonly _ws: WebSocketAsync
     readonly userId: string
 
@@ -30,7 +30,7 @@ class EventStreamConnection {
     }
 }
 
-namespace EventStreamConnection {
+export namespace EventStreamConnection {
     export const Factory = new FactoryKey<[{
         ws: WebSocketAsync,
         userId: string,
@@ -40,4 +40,4 @@ namespace EventStreamConnection {
         .provide(Factory, {}, () => ({ ws, userId }) => new EventStreamConnection(ws, userId))
 }
 
-export = EventStreamConnection
+export default EventStreamConnection
