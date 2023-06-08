@@ -1,9 +1,9 @@
 import Container, { FactoryKey } from "../Container"
 import HttpError from "../HttpError"
 import { PromptManager } from "../prompts.ts"
-import { ClientEvent, ServerEvent } from "./Event"
+import { ClientEvent, ServerEvent } from "../Event"
 import EventStreamConnection from "./EventStreamConnection"
-import { GameState, PlayerState } from "./GameState"
+import { GameState, PlayerState } from "../GameState"
 import * as uuid from 'uuid'
 import * as crypto from 'crypto'
 import { CountdownLock } from "../syncUtils"
