@@ -5,8 +5,11 @@
   "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "tsc && node ."
+    "installClient": "cd ai-game-client && npm install",
+    "install": "npm run installClient",
+    "buildClient": "cd ai-game-client && npm run build",
+    "build": "npm run buildClient && tsc",
+    "start": "npm run build && node ."
   },
   "author": "",
   "license": "ISC",

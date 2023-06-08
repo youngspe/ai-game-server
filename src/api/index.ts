@@ -37,9 +37,9 @@ namespace Api {
             .get('/games/:gameId/events', wsu.handle(async (ws, req) => {
                 throw new Error('not implemented')
             })))
-            .apply(EventStreamConnection.Module)
-            .apply(Game.Module)
-            .apply(GameRegistry.Module)
+        .apply(EventStreamConnection.Module)
+        .apply(Game.Module)
+        .apply(GameRegistry.Module)
 }
 
-export = Api
+export default Api

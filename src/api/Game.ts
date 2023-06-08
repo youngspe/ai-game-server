@@ -276,4 +276,4 @@ namespace Game {
         }, ({ promptManager }) => ({ id, ownerId }) => new Game(id, ownerId, promptManager))
 }
 
-export = Game
+export default Game

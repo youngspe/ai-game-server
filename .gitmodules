@@ -1,0 +1,4 @@
+[submodule "ai-game-client"]
+	path = ai-game-client
+	url = git@github.com:youngspe/ai-game-client.git
+	branch = develop

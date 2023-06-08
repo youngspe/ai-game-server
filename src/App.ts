@@ -31,10 +31,8 @@ namespace App {
                 })
                 .use(api)
             )
-            .get('/ws', wsu.handle(async ws => {
-                await ws.sendAsync('Hello, world!')
-                ws.close()
-            }))
+            .use(express.static('../ai-game-client/dist'))
+            .use(express.static('../ai-game-client/public'))
             .use((req, res, next) => { next(new HttpError(404)) })
             .use(errorHandler)
         )

@@ -12,7 +12,7 @@ class WsUtils {
     }
 
     handle<A extends Parameters<RequestHandler>>(
-        f: (ws: WsUtils.WebSocketAsync, req: A[0]) => Promise<void> | undefined,
+        f: (ws: WebSocketAsync, req: A[0]) => Promise<void> | undefined,
     ) {
         return (...[req, res, next]: A) => {
             if (req.headers.upgrade?.toLowerCase() == 'websocket') {
@@ -20,7 +20,7 @@ class WsUtils {
                     (ws as any).sendAsync = (data: string | Buffer) => new Promise<void>((ok, err) => {
                         ws.send(data, e => e ? err(e) : ok())
                     })
-                    f(ws as WsUtils.WebSocketAsync, req)?.catch(e => {
+                    f(ws as WebSocketAsync, req)?.catch(e => {
                         this.fail(ws, e)
                     })
                 })
@@ -43,7 +43,7 @@ namespace WsUtils {
 
     export const Key = new TypeKey<WsUtils>
     export const ServerKey = new TypeKey<WebSocket.WebSocketServer>
-    export type WebSocketAsync = WebSocket & { sendAsync(data: string | Buffer): Promise<void> }
 }
 
-export = WsUtils
+export type WebSocketAsync = WebSocket & { sendAsync(data: string | Buffer): Promise<void> }
+export default WsUtils

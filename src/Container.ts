@@ -19,24 +19,24 @@ class Lazy<T> {
     }
 }
 
-class Container {
-    private _providers = new Map<Container.TypeKey<any>, Entry<any, any>>()
+export class Container {
+    private _providers = new Map<TypeKey<any>, Entry<any, any>>()
 
-    private _setProvider<T, D = {}>(key: Container.TypeKey<T>, entry: Entry<T, D>) {
+    private _setProvider<T, D = {}>(key: TypeKey<T>, entry: Entry<T, D>) {
         this._providers.set(key, entry)
     }
 
-    provide<T, D>(key: Container.TypeKey<T>, deps: Container.Dependencies<D>, fac: (deps: D) => T): this {
+    provide<T, D>(key: TypeKey<T>, deps: Dependencies<D>, fac: (deps: D) => T): this {
         this._setProvider(key, { value: { deps, fac, singleton: false } })
         return this
     }
 
-    provideSingleton<T, D>(key: Container.TypeKey<T>, deps: Container.Dependencies<D>, fac: (deps: D) => T): this {
+    provideSingleton<T, D>(key: TypeKey<T>, deps: Dependencies<D>, fac: (deps: D) => T): this {
         this._setProvider(key, { value: { deps, fac, singleton: true } })
         return this
     }
 
-    provideInstance<T>(key: Container.TypeKey<T>, instance: T): this {
+    provideInstance<T>(key: TypeKey<T>, instance: T): this {
         this._setProvider(key, { value: { instance } })
         return this
     }
@@ -46,8 +46,8 @@ class Container {
         return this
     }
 
-    request<T>(deps: Container.Dependencies<T>, key: string = ''): T {
-        if (deps instanceof Container.TypeKey) {
+    request<T>(deps: Dependencies<T>, key: string = ''): T {
+        if (deps instanceof TypeKey) {
             const entry = this._providers.get(deps)
             if (!entry) throw new Error(`${key} not provided`)
             if ('instance' in entry.value) {
@@ -62,15 +62,15 @@ class Container {
             return instance
         }
 
-        if (deps instanceof Container.LazyKey) {
+        if (deps instanceof LazyKey) {
             return new Lazy(() => this.request(deps.key)) as T
         }
 
-        if (deps instanceof Container.ProviderKey) {
+        if (deps instanceof ProviderKey) {
             return (() => this.request(deps.key)) as T
         }
 
-        if (deps instanceof Container.AbstractKey) {
+        if (deps instanceof AbstractKey) {
             throw new Error()
         }
 
@@ -86,49 +86,47 @@ class Container {
 
 type Entry<T, D> = {
     value: {
-        deps: Container.Dependencies<D>,
+        deps: Dependencies<D>,
         fac: (deps: D) => T,
         singleton: boolean,
     } | { instance: T }
 }
 
-namespace Container {
-    export abstract class AbstractKey<T> {
-        private readonly [abstractKeySymbol]: T[] = []
-    }
-
-    export class LazyKey<out T> extends AbstractKey<{ readonly value: T }> {
-        private readonly [lazySymbol]: T[] = []
-        readonly key: Dependencies<T>
-        constructor(key: Dependencies<T>) {
-            super()
-            this.key = key
-        }
-    }
-
-    export class ProviderKey<out T> extends AbstractKey<() => T> {
-        private readonly [provideSymbol]: T[] = []
-        readonly key: Dependencies<T>
-        constructor(key: Dependencies<T>) {
-            super()
-            this.key = key
-        }
-    }
-
-    export class TypeKey<out T> {
-        private readonly [keySymbol]: T | null = null
-        lazy = new LazyKey<T>(this)
-        provider = new ProviderKey<T>(this)
-    }
-
-    export class FactoryKey<Args extends any[], T> extends TypeKey<(...args: Args) => T> { }
-
-    export type Dependencies<T> =
-        | TypeKey<T>
-        | AbstractKey<T>
-        | { [K in keyof T]: Dependencies<T[K]> }
-
-    export type Actual<D> = D extends Dependencies<infer T> ? T : never
+export abstract class AbstractKey<T> {
+    private readonly [abstractKeySymbol]: T[] = []
 }
 
-export = Container
+export class LazyKey<out T> extends AbstractKey<{ readonly value: T }> {
+    private readonly [lazySymbol]: T[] = []
+    readonly key: Dependencies<T>
+    constructor(key: Dependencies<T>) {
+        super()
+        this.key = key
+    }
+}
+
+export class ProviderKey<out T> extends AbstractKey<() => T> {
+    private readonly [provideSymbol]: T[] = []
+    readonly key: Dependencies<T>
+    constructor(key: Dependencies<T>) {
+        super()
+        this.key = key
+    }
+}
+
+export class TypeKey<out T> {
+    private readonly [keySymbol]: T | null = null
+    lazy = new LazyKey<T>(this)
+    provider = new ProviderKey<T>(this)
+}
+
+export class FactoryKey<Args extends any[], T> extends TypeKey<(...args: Args) => T> { }
+
+export type Dependencies<T> =
+    | TypeKey<T>
+    | AbstractKey<T>
+    | { [K in keyof T]: Dependencies<T[K]> }
+
+export type Actual<D> = D extends Dependencies<infer T> ? T : never
+
+export default Container
