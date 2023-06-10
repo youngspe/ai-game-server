@@ -2,12 +2,12 @@
   "name": "ai-game-server",
   "version": "0.1.0",
   "description": "",
-  "main": "bin/index.js",
+  "main": "bin/src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "installClient": "cd ai-game-client && npm install",
     "install": "npm run installClient",
-    "buildClient": "cd ai-game-client && npm run build",
+    "buildClient": "cd ai-game-client && npm run build:dev",
     "build": "npm run buildClient && tsc",
     "start": "npm run build && node ."
   },

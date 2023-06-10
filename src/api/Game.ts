@@ -1,6 +1,6 @@
 import Container, { FactoryKey } from "../Container"
 import HttpError from "../HttpError"
-import { PromptManager } from "../prompts.ts"
+import { PromptManager } from "../prompts"
 import { ClientEvent, ServerEvent } from "../Event"
 import EventStreamConnection from "./EventStreamConnection"
 import { GameState, PlayerState } from "../GameState"

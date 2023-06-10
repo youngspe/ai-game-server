@@ -6,7 +6,7 @@ import WsUtils from './wsUtils'
 import Container from './Container'
 import App from './App'
 import TokenManager from './TokenManager'
-import Prompts from './prompts.ts'
+import Prompts from './prompts'
 import AI from './AI'
 
 
