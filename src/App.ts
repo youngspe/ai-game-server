@@ -1,4 +1,4 @@
-import express, { ErrorRequestHandler, Router } from "express"
+import express, { ErrorRequestHandler, RequestHandler, Router } from "express"
 import Container, { TypeKey } from "./Container"
 import Api from "./api"
 import WsUtils from "./wsUtils"
@@ -18,11 +18,18 @@ namespace App {
             res.json({ error: message })
         }
 
+        const useQueryToken: RequestHandler = (req, res, next) => {
+            const token = req.query.authToken
+            if (token) {
+                req.headers.authorization ??= `Bearer ${token}`
+            }
+            next()
+        }
+
         ct.provide(Key, {
             api: Api.Key,
-            wsu: WsUtils.Key,
             tokenManager: TokenManager.Key,
-        }, ({ api, wsu, tokenManager }) => express()
+        }, ({ api, tokenManager }) => express()
             .use('/api', Router()
                 .use(express.json())
                 .post('/session', async (req, res, next) => {

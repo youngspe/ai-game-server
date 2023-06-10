@@ -193,6 +193,7 @@ class Game {
         })
 
         const submissionIds = await this._mapPlayers((_, playerState) => playerState.submission?.id)
+        this.gameState.round!.submissionIds = submissionIds
 
         const judgmentEndTime = new Date().getTime() + VOTING_DURATION
         this.gameState.round!.judgmentEndTime = judgmentEndTime
