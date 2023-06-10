@@ -14,7 +14,7 @@ class GameRegistry {
     }
 
     private _nextId(): string {
-        const blank = new Array<undefined>(ID_LENGTH)
+        const blank = new Array<null>(ID_LENGTH).fill(null)
         while (true) {
             const id = blank.map(() => SYMBOLS[crypto.randomInt(SYMBOLS.length)]).join('')
             if (!this._games.has(id)) {

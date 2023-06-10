@@ -31,8 +31,9 @@ class WsUtils {
     }
 
     fail(ws: WebSocket, error: any) {
-        const { status, message } = errorInfo(error)
-        ws.close(status, JSON.stringify({ error: message }))
+        const info = errorInfo(error)
+        console.error(info.status, info.message)
+        ws.close(undefined, JSON.stringify({ error: info }))
     }
 }
 

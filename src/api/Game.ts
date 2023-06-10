@@ -29,6 +29,7 @@ class Game {
     constructor(id: string, ownerId: string, promptManager: PromptManager) {
         this.id = id
         this.gameState = {
+            gameId: id,
             playerList: [],
             started: false,
             ownerId,
@@ -53,7 +54,7 @@ class Game {
 
     async addPlayer(userId: string, displayName: string) {
         if (userId in this.playerStates) return
-        this.playerStates[userId] = { displayName }
+        this.playerStates[userId] = { userId, displayName }
         this.gameState.playerList.push({ userId, displayName })
         await this._broadcastToAll([{ event: 'addPlayer', player: { userId, displayName } }])
     }

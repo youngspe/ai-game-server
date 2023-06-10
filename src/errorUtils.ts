@@ -1,3 +1,4 @@
+import { RequestHandler } from 'express'
 import { STATUS_CODES } from 'http'
 
 
@@ -30,4 +31,22 @@ export function errorMessage(error: unknown): string | null {
     }
 
     return null
+}
+
+export function catching<F extends RequestHandler>(f: F, shouldCatch?: (ex: any) => boolean): F {
+    return async function (req, res, next) {
+        try {
+            return await f(req, res, next)
+        } catch (ex) {
+            if (shouldCatch) {
+                if (shouldCatch(ex)) {
+                    next(ex)
+                } else {
+                    throw ex
+                }
+            } else {
+                next(ex)
+            }
+        }
+    } as RequestHandler as F
 }

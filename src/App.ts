@@ -14,6 +14,7 @@ namespace App {
     export function Module(ct: Container) {
         const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
             const { status, message } = errorInfo(err)
+            console.error(status, message)
             res.status(status)
             res.json({ error: message })
         }
@@ -30,6 +31,7 @@ namespace App {
             api: Api.Key,
             tokenManager: TokenManager.Key,
         }, ({ api, tokenManager }) => express()
+            .use(useQueryToken)
             .use('/api', Router()
                 .use(express.json())
                 .post('/session', async (req, res, next) => {
