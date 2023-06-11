@@ -228,15 +228,17 @@ class Game {
         const playerState = this.playerStates[userId]
         if (playerState == null) throw new Error('Player not in game')
         if (this.gameState.round == null || this.gameState.round.judgmentEndTime != null) throw new Error('Not accepting submissions')
-        if (playerState.submission != null) throw new Error('Already submitted')
-        const id = uuid.v4()
-        playerState.submission = { id: uuid.v4(), style }
+        const newSubmission = playerState?.submission == null
+        const id = playerState?.submission?.id ?? uuid.v4()
+        playerState.submission = { id, style }
 
         const output = await this._promptManager.getOutput(this.gameState.round.prompt, style)
         playerState.submission.output = output
 
-        this._submissionLock?.decrement()
-        await this._sendToUser(userId, [{ event: "generateSubmission", id, output }])
+        if (newSubmission) {
+            this._submissionLock?.decrement()
+        }
+        await this._sendToUser(userId, [{ event: "generateSubmission", id, style, output }])
     }
 
     private async _vote(userId: string, votes: { [SubmissionId in string]?: number }) {

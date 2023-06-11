@@ -2,15 +2,21 @@ import Container, { TypeKey } from "../Container"
 
 export class PromptManager {
     async getPrompt(): Promise<string> {
-        throw new Error('TODO: generate prompt')
+        return 'Foo bar baz'
+        // TODO: generate prompt
+        // throw new Error('TODO: generate prompt')
     }
 
     async getStyleSuggestions(count: number): Promise<string[]> {
-        throw new Error('TODO: generate style suggestions')
+        return new Array(count).fill('foo')
+        // TODO: generate style suggestions
+        // throw new Error('TODO: generate style suggestions')
     }
 
     async getOutput(prompt: string, style: string): Promise<string> {
-        throw new Error('TODO: generate output')
+        return 'Qwer asdf zxcv'
+        // TODO: generate output
+        // throw new Error('TODO: generate output')
     }
 }
 
