@@ -32,7 +32,7 @@ class WsUtils {
 
     fail(ws: WebSocket, error: any) {
         const info = errorInfo(error)
-        console.error(info.status, info.message)
+        console.error(info.status, info.message.slice(0, 1024))
         ws.close(undefined, JSON.stringify({ error: info }))
     }
 }

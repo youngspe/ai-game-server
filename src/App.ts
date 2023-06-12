@@ -14,7 +14,7 @@ namespace App {
     export function Module(ct: Container) {
         const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
             const { status, message } = errorInfo(err)
-            console.error(status, message)
+            console.error(status, message.slice(0, 1024))
             res.status(status)
             res.json({ error: message })
         }

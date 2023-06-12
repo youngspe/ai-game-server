@@ -11,9 +11,19 @@ import AI from './AI'
 
 
 const jwtSecret = fs.readFileSync('secrets/jwt')
-const openAiKey = fs.readFileSync('secrets/openAIKey', { encoding: 'utf8' })
+const openAiKey = fs.readFileSync('secrets/openAIKey', { encoding: 'utf8' }).trim()
 const wss = new WebSocketServer({ clientTracking: false, noServer: true })
 const port = 5000
+
+const styles = fs.readFileSync('data/styles.txt', { encoding: 'utf8' })
+    .split('\n')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+
+const prompts = fs.readFileSync('data/prompts.txt', { encoding: 'utf8' })
+    .split('\n')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
 
 new Container()
     .provideInstance(TokenManager.SecretKey, jwtSecret)
@@ -21,6 +31,8 @@ new Container()
     .provideInstance(AI.Keys.Config, new OpenAI.Configuration({
         apiKey: openAiKey,
     }))
+    .provideInstance(Prompts.StylesKey, styles)
+    .provideInstance(Prompts.PromptsKey, prompts)
     .apply(TokenManager.Module)
     .apply(WsUtils.Module)
     .apply(Api.Module)
