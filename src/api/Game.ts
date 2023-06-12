@@ -183,10 +183,13 @@ class Game {
         // Now add up the votes
 
         const scores = await this._mapPlayers(async userId => {
+            const subId = this.playerStates[userId]?.submission?.id
             let sum = 0
-            await this._mapPlayers((_, playerState) => {
-                sum += playerState.votes?.[userId] ?? 0
-            })
+            if (subId != null) {
+                await this._mapPlayers((_, playerState) => {
+                    sum += playerState.votes?.[subId] ?? 0
+                })
+            }
             const scoreList = this.gameState.scores[userId] ?? []
             scoreList.push(sum)
             this.gameState.scores[userId] = scoreList
@@ -196,12 +199,18 @@ class Game {
         const submissionIds = await this._mapPlayers((_, playerState) => playerState.submission?.id)
         this.gameState.round!.submissionIds = submissionIds
 
-        const judgmentEndTime = new Date().getTime() + VOTING_DURATION
-        this.gameState.round!.judgmentEndTime = judgmentEndTime
+        const scoreEndTime = new Date().getTime() + ROUND_SCORE_DURATION
+        this.gameState.round!.scoreEndTime = scoreEndTime
 
         await parallel(
             delay(ROUND_SCORE_DURATION),
-            this._broadcastToAll([{ event: 'endRound', round: this.gameState.round!.number, scores, submissionIds }]),
+            this._broadcastToAll([{
+                event: 'endRound',
+                round: this.gameState.round!.number,
+                scores,
+                submissionIds,
+                scoreEndTime,
+            }]),
         )
 
         await this._endRound()
@@ -227,33 +236,30 @@ class Game {
     private async _submit(userId: string, style: string) {
         const playerState = this.playerStates[userId]
         if (playerState == null) throw new Error('Player not in game')
-        if (this.gameState.round == null || this.gameState.round.judgmentEndTime != null) throw new Error('Not accepting submissions')
-        const newSubmission = playerState?.submission == null
-        const id = playerState?.submission?.id ?? uuid.v4()
+        if (this.gameState.round == null || this.gameState.round.judgmentEndTime != null) return // handle this case somehow?
+        if (playerState?.submission != null) return // handle this case somehow?
+        const id = uuid.v4()
         playerState.submission = { id, style }
 
         const output = await this._promptManager.getOutput(this.gameState.round.prompt, style)
         playerState.submission.output = output
 
-        if (newSubmission) {
-            this._submissionLock?.decrement()
-        }
+        this._submissionLock?.decrement()
         await this._sendToUser(userId, [{ event: "generateSubmission", id, style, output }])
     }
 
     private async _vote(userId: string, votes: { [SubmissionId in string]?: number }) {
         const playerState = this.playerStates[userId]
         if (playerState == null) throw new Error('Player not in game')
-        if (playerState.votes != null) throw new Error('Already voted')
         let sum = 0
         for (let id in votes) {
             const vote = votes[id] ?? 0
-            if (vote < 0) throw new Error('invalid vote')
-            if (vote > 0 && playerState.submission?.id == id) throw new Error('invalid vote')
+            if (vote < 0) continue // handle invalid votes?
+            if (vote > 0 && playerState.submission?.id == id) continue // handle invalid votes?
             sum += vote
         }
 
-        if (sum > (this.gameState.round?.voteCount ?? -1)) throw new Error('invalid vote')
+        if (sum > (this.gameState.round?.voteCount ?? -1)) return // handle invalid votes?
 
         this.playerStates[userId]!.votes = votes
     }
