@@ -1,5 +1,4 @@
 import express, { ErrorRequestHandler, RequestHandler, Router } from "express"
-import Container, { TypeKey } from "./Container"
 import Api from "./api"
 import WsUtils from "./wsUtils"
 import TokenManager from "./TokenManager"
@@ -7,45 +6,44 @@ import * as uuid from 'uuid'
 import HttpError from "./HttpError"
 import { Express } from "express"
 import { errorInfo } from "./errorUtils"
+import { Module, TypeKey } from "checked-inject"
 
-namespace App {
-    export const Key = new TypeKey<Express>
+export class AppKey extends TypeKey<Express>() { static readonly keyTag = Symbol() }
+class ErrorHandler extends TypeKey<ErrorRequestHandler>() { static readonly keyTag = Symbol()}
 
-    export function Module(ct: Container) {
-        const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-            const { status, message } = errorInfo(err)
-            console.error(status, message.slice(0, 1024))
-            res.status(status)
-            res.json({ error: message })
-        }
-
-        const useQueryToken: RequestHandler = (req, res, next) => {
-            const token = req.query.authToken
-            if (token) {
-                req.headers.authorization ??= `Bearer ${token}`
-            }
-            next()
-        }
-
-        ct.provide(Key, {
-            api: Api.Key,
-            tokenManager: TokenManager.Key,
-        }, ({ api, tokenManager }) => express()
-            .use(useQueryToken)
-            .use('/api', Router()
-                .use(express.json())
-                .post('/session', async (req, res, next) => {
-                    const token = await tokenManager.sign({ userId: uuid.v4() })
-                    res.json({ token })
-                })
-                .use(api)
-            )
-            .use(express.static('./ai-game-client/dist'))
-            .use(express.static('./ai-game-client/public'))
-            .use((req, res, next) => { next(new HttpError(404)) })
-            .use(errorHandler)
-        )
+export const AppModule = Module(ct =>
+    const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+        const { status, message } = errorInfo(err)
+        console.error(status, message.slice(0, 1024))
+        res.status(status)
+        res.json({ error: message })
     }
-}
 
-export = App
+    const useQueryToken: RequestHandler = (req, res, next) => {
+        const token = req.query.authToken
+        if (token) {
+            req.headers.authorization ??= `Bearer ${token}`
+        }
+        next()
+    }
+
+    ct.provide(Key, {
+        api: Api.Key,
+        tokenManager: TokenManager.Key,
+    }, ({ api, tokenManager }) => express()
+        .use(useQueryToken)
+        .use('/api', Router()
+            .use(express.json())
+            .post('/session', async (req, res, next) => {
+                const token = await tokenManager.sign({ userId: uuid.v4() })
+                res.json({ token })
+            })
+            .use(api)
+        )
+        .use(express.static('./ai-game-client/dist'))
+        .use(express.static('./ai-game-client/public'))
+        .use((req, res, next) => { next(new HttpError(404)) })
+        .use(errorHandler)
+    )
+}
+}
