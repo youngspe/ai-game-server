@@ -1,15 +1,25 @@
 import { OpenAIApi } from "openai"
 import AI from "../AI"
-import Container, { TypeKey } from "../Container"
-import Prompts from "."
+import { PromptKeys } from "."
 import { randInt } from "../randomUtils"
+import { Module, Singleton } from "checked-inject"
 
-export class PromptManager {
+export abstract class PromptManager {
+    abstract readonly ai: OpenAIApi
+    abstract readonly styles: string[]
+    abstract readonly prompts: string[]
+
+    abstract getPrompt(): Promise<string>
+    abstract getStyleSuggestions(count: number): Promise<string[]>
+    abstract getOutput(prompt: string, style: string): Promise<string>
+}
+export class DefaultPromptManager extends PromptManager {
     readonly ai: OpenAIApi
     readonly styles: string[]
     readonly prompts: string[]
 
     constructor(ai: OpenAIApi, styles: string[], prompts: string[]) {
+        super()
         this.ai = ai
         this.styles = styles
         this.prompts = prompts
@@ -58,14 +68,10 @@ export class PromptManager {
     }
 }
 
-export namespace PromptManager {
-    export const Key = new TypeKey<PromptManager>()
-    export const Module = (ct: Container) => ct
-        .provideSingleton(Key, {
-            ai: AI.Keys.Api,
-            styles: Prompts.StylesKey,
-            prompts: Prompts.PromptsKey,
-        }, ({ ai, styles, prompts }) => new PromptManager(ai, styles, prompts))
-}
-
-export default PromptManager
+export const PromptManagerModule = Module(ct => ct
+    .provide(PromptManager, Singleton, {
+        ai: AI.Keys.Api,
+        styles: PromptKeys.Styles,
+        prompts: PromptKeys.Prompts,
+    }, ({ ai, styles, prompts }) => new DefaultPromptManager(ai, styles, prompts))
+)

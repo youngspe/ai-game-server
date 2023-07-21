@@ -1,13 +1,16 @@
 import { RequestHandler } from "express"
 import WebSocket, { WebSocketServer } from "ws"
-import Container, { TypeKey } from "./Container"
-import http from 'http'
 import { errorInfo } from "./errorUtils"
+import { Inject, Injectable, Module, Singleton, TypeKey } from "checked-inject"
 
-class WsUtils {
+
+export class WsServerKey extends TypeKey<WebSocket.WebSocketServer>() { static readonly keyTag = Symbol() }
+
+export class WsUtils extends Injectable {
     server: WebSocket.WebSocketServer
 
     constructor(server: WebSocketServer) {
+        super()
         this.server = server
     }
 
@@ -35,16 +38,14 @@ class WsUtils {
         console.error(info.status, info.message.slice(0, 1024))
         ws.close(undefined, JSON.stringify({ error: info }))
     }
+
+    static scope = Singleton
+    static inject = Inject.construct(this, WsServerKey)
 }
 
-namespace WsUtils {
-    export function Module(ct: Container) {
-        ct.provideSingleton(Key, { wss: ServerKey }, ({ wss }) => new WsUtils(wss))
-    }
-
-    export const Key = new TypeKey<WsUtils>
-    export const ServerKey = new TypeKey<WebSocket.WebSocketServer>
-}
+export const WsModule = Module(ct => ct
+    .provide(WsServerKey, () => new WebSocketServer({ clientTracking: false, noServer: true }))
+)
 
 export type WebSocketAsync = WebSocket & { sendAsync(data: string | Buffer): Promise<void> }
 export default WsUtils

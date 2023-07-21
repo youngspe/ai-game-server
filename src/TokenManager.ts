@@ -1,16 +1,16 @@
 import { RequestHandler } from "express"
-import Container, { TypeKey } from "./Container"
 import * as jwt from 'jsonwebtoken'
 import { expressjwt } from "express-jwt"
+import { Module, Singleton, TypeKey } from 'checked-inject'
 
 const algorithm: jwt.Algorithm = 'HS256'
 
-interface TokenManager {
-    readonly verifyJwt: <A extends Parameters<RequestHandler>>(...args: A) => void
-    sign(token: { userId: string }): Promise<string>
+export abstract class TokenManager {
+    abstract readonly verifyJwt: <A extends Parameters<RequestHandler>>(...args: A) => void
+    abstract sign(token: { userId: string }): Promise<string>
 }
 
-class _TokenManager implements TokenManager {
+class _TokenManager extends TokenManager {
     readonly secret: Buffer
     readonly verifyJwt = <A extends Parameters<RequestHandler>>(...args: A) =>
         expressjwt({ secret: this.secret, algorithms: [algorithm] })(...args as Parameters<RequestHandler>)
@@ -25,17 +25,13 @@ class _TokenManager implements TokenManager {
     }
 
     constructor(secret: Buffer) {
+        super()
         this.secret = secret
     }
 }
 
-namespace TokenManager {
-    export const Key = new TypeKey<TokenManager>()
-    export function Module(ct: Container) {
-        ct.provideSingleton(Key, { secret: SecretKey }, ({ secret }) => new _TokenManager(secret))
-    }
+export const TokenModule = Module(ct => ct
+    .provide(TokenManager, Singleton, { secret: JwtSecretKey }, ({ secret }) => new _TokenManager(secret))
+)
 
-    export const SecretKey = new TypeKey<Buffer>()
-}
-
-export = TokenManager
+export class JwtSecretKey extends TypeKey<Buffer>() { static readonly keyTag = Symbol() }

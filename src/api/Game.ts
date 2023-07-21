@@ -1,13 +1,13 @@
-import Container, { FactoryKey } from "../Container"
 import HttpError from "../HttpError"
 import { PromptManager } from "../prompts"
 import { ClientEvent, ServerEvent } from "../Event"
-import EventStreamConnection from "./EventStreamConnection"
+import { EventStreamConnection } from "./EventStreamConnection"
 import { GameState, PlayerState } from "../GameState"
 import * as uuid from 'uuid'
 import * as crypto from 'crypto'
 import { CountdownLock } from "../syncUtils"
 import { delay, parallel } from "../asyncUtils"
+import { FactoryKey, Module } from "checked-inject"
 
 const VOTE_COUNT = 3
 const ROUND_COUNT = 3
@@ -16,7 +16,24 @@ const SUBMISSION_DURATION = 30_000
 const VOTING_DURATION = 30_000
 const ROUND_SCORE_DURATION = 30_000
 
-class Game {
+export abstract class Game {
+    abstract readonly id: string
+    abstract readonly gameState: GameState
+    abstract readonly playerStates: Partial<Record<string, PlayerState>>
+    abstract readonly connections: Partial<Record<string, EventStreamConnection>>
+
+    abstract playerCount: number
+
+    abstract addPlayer(userId: string, displayName: string): Promise<void>
+
+    abstract addConnection(connection: EventStreamConnection): Promise<void>
+
+    abstract connectionClosed(connection: EventStreamConnection): Promise<void>
+
+    abstract onMessage(connection: EventStreamConnection, data: string): Promise<void>
+}
+
+export class DefaultGame extends Game {
     readonly id: string
     readonly gameState: GameState
     readonly playerStates: Partial<Record<string, PlayerState>> = Object.create(null)
@@ -27,6 +44,7 @@ class Game {
     get playerCount() { return Object.getOwnPropertyNames(this.playerStates).length }
 
     constructor(id: string, ownerId: string, promptManager: PromptManager) {
+        super()
         this.id = id
         this.gameState = {
             gameId: id,
@@ -277,13 +295,10 @@ class Game {
     }
 }
 
-
-namespace Game {
-    export const Factory = new FactoryKey<[{ id: string, ownerId: string }], Game>()
-    export const Module = (ct: Container) => ct
-        .provide(Factory, {
-            promptManager: PromptManager.Key,
-        }, ({ promptManager }) => ({ id, ownerId }) => new Game(id, ownerId, promptManager))
+export const GameModule = Module(ct => ct
+    .provide(GameFactory, { promptManager: PromptManager }, ({ promptManager }) =>
+        ({ id, ownerId }) => new DefaultGame(id, ownerId, promptManager))
+)
+export class GameFactory extends FactoryKey<Game, [{ id: string, ownerId: string }]>() {
+    static readonly keyTag = Symbol()
 }
-
-export default Game

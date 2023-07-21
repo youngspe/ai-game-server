@@ -1,6 +1,6 @@
-import Container, { FactoryKey } from "../Container"
+import { FactoryKey, Module } from "checked-inject"
 import { WebSocketAsync } from "../wsUtils"
-import Game from "./Game"
+import { Game } from "./Game"
 
 export class EventStreamConnection {
     private readonly _ws: WebSocketAsync
@@ -30,14 +30,13 @@ export class EventStreamConnection {
     }
 }
 
-export namespace EventStreamConnection {
-    export const Factory = new FactoryKey<[{
-        ws: WebSocketAsync,
-        userId: string,
-    }], EventStreamConnection>()
-
-    export const Module = (ct: Container) => ct
-        .provide(Factory, {}, () => ({ ws, userId }) => new EventStreamConnection(ws, userId))
+export class EventStreamConnectionFactory extends FactoryKey<EventStreamConnection, [{
+    ws: WebSocketAsync,
+    userId: string,
+}]>() {
+    static readonly keyTag = Symbol()
 }
 
-export default EventStreamConnection
+export const EventStreamConnectionModule = Module(ct => ct
+    .provideInstance(EventStreamConnectionFactory, ({ ws, userId }) => new EventStreamConnection(ws, userId))
+)

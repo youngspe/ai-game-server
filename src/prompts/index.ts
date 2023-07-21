@@ -1,14 +1,11 @@
-import Container, { TypeKey } from "../Container"
-import { PromptManager } from "./PromptManager"
+import { Module, TypeKey } from "checked-inject"
+import { PromptManagerModule } from "./PromptManager"
 
-export * from './PromptManager'
+export { PromptManager } from './PromptManager'
 
-export namespace Prompts {
-    export const Module = (ct: Container) => ct
-        .apply(PromptManager.Module)
+export const PromptModule = Module(PromptManagerModule)
 
-    export const StylesKey = new TypeKey<string[]>()
-    export const PromptsKey = new TypeKey<string[]>()
+export namespace PromptKeys {
+    export class Styles extends TypeKey<string[]>() { static readonly keyTag = Symbol() }
+    export class Prompts extends TypeKey<string[]>() { static readonly keyTag = Symbol() }
 }
-
-export default Prompts

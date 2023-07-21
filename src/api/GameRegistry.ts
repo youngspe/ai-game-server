@@ -1,15 +1,21 @@
 import * as crypto from 'crypto'
-import Container, { Actual, TypeKey } from "../Container"
-import Game from './Game'
+import { Game, GameFactory } from './Game'
+import { Inject, Module, Singleton, Target } from 'checked-inject'
 
 const SYMBOLS = 'abcdefghjkmnpqrstuvwxyz23456789'
 const ID_LENGTH = 6
 
-class GameRegistry {
-    private readonly _games = new Map<string, Game>()
-    private readonly _gameFac: Actual<typeof Game.Factory>
+export abstract class GameRegistry {
+    abstract createGame(ownerId: string): Game
+    abstract get(gameId: string): Game | undefined
+}
 
-    constructor(gameFac: Actual<typeof Game.Factory>) {
+export class DefaultGameRegistry extends GameRegistry {
+    private readonly _games = new Map<string, Game>()
+    private readonly _gameFac: Target<typeof GameFactory>
+
+    constructor(gameFac: Target<typeof GameFactory>) {
+        super()
         this._gameFac = gameFac
     }
 
@@ -33,12 +39,10 @@ class GameRegistry {
     get(gameId: string): Game | undefined {
         return this._games.get(gameId.toLowerCase())
     }
+
+    static inject = Inject.construct(this, GameFactory)
 }
 
-namespace GameRegistry {
-    export const Key = new TypeKey<GameRegistry>()
-    export const Module = (ct: Container) => ct
-        .provideSingleton(Key, { gameFac: Game.Factory }, ({ gameFac }) => new GameRegistry(gameFac))
-}
-
-export = GameRegistry
+export const GameRegistryModule = Module(ct => ct
+    .provide(GameRegistry, Singleton, Inject.from(DefaultGameRegistry))
+)
