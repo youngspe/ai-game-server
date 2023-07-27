@@ -34,4 +34,4 @@ export const TokenModule = Module(ct => ct
     .provide(TokenManager, Singleton, { secret: JwtSecretKey }, ({ secret }) => new _TokenManager(secret))
 )
 
-export class JwtSecretKey extends TypeKey<Buffer>() { static readonly keyTag = Symbol() }
+export class JwtSecretKey extends TypeKey<Buffer>() { private _: any }

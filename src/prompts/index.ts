@@ -6,6 +6,6 @@ export { PromptManager } from './PromptManager'
 export const PromptModule = Module(PromptManagerModule)
 
 export namespace PromptKeys {
-    export class Styles extends TypeKey<string[]>() { static readonly keyTag = Symbol() }
-    export class Prompts extends TypeKey<string[]>() { static readonly keyTag = Symbol() }
+    export class Styles extends TypeKey<string[]>() { private _: any }
+    export class Prompts extends TypeKey<string[]>() { private _: any }
 }

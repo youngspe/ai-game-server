@@ -34,7 +34,7 @@ export class EventStreamConnectionFactory extends FactoryKey<EventStreamConnecti
     ws: WebSocketAsync,
     userId: string,
 }]>() {
-    static readonly keyTag = Symbol()
+    private _: any
 }
 
 export const EventStreamConnectionModule = Module(ct => ct

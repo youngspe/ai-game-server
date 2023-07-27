@@ -300,5 +300,5 @@ export const GameModule = Module(ct => ct
         ({ id, ownerId }) => new DefaultGame(id, ownerId, promptManager))
 )
 export class GameFactory extends FactoryKey<Game, [{ id: string, ownerId: string }]>() {
-    static readonly keyTag = Symbol()
+    private _: any
 }

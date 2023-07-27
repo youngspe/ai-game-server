@@ -4,7 +4,7 @@ import { errorInfo } from "./errorUtils"
 import { Inject, Injectable, Module, Singleton, TypeKey } from "checked-inject"
 
 
-export class WsServerKey extends TypeKey<WebSocket.WebSocketServer>() { static readonly keyTag = Symbol() }
+export class WsServerKey extends TypeKey<WebSocket.WebSocketServer>() { private _: any }
 
 export class WsUtils extends Injectable {
     server: WebSocket.WebSocketServer

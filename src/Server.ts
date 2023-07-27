@@ -8,7 +8,7 @@ import { Express } from "express"
 import { errorInfo } from "./errorUtils"
 import { Module, TypeKey } from "checked-inject"
 
-export class ServerKey extends TypeKey<Express>() { static readonly keyTag = Symbol() }
+export class ServerKey extends TypeKey<Express>() { private _: any }
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     const { status, message } = errorInfo(err)
     console.error(status, message.slice(0, 1024))

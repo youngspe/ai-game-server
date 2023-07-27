@@ -10,7 +10,7 @@ import { catching } from "../errorUtils"
 import { Module, TypeKey } from "checked-inject"
 
 
-export class ApiKey extends TypeKey<Router>() { static readonly keyTag = Symbol() }
+export class ApiKey extends TypeKey<Router>() { private _: any }
 
 export const ApiModule = Module(
     EventStreamConnectionModule,
